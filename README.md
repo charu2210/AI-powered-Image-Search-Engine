@@ -1,77 +1,275 @@
 # AI-Powered Image Search Engine
 
-Type a sentence like *"a thatched roof cottage"* and get the most similar images from the dataset.
-Built with **CLIP** (a model that understands both text and images) during the VISMA Lab internship, IIT Bhubaneswar.
+A natural-language image search system built using **CLIP**, cosine similarity, and **Streamlit**. It retrieves images from a local dataset based on text descriptions instead of filenames or exact keywords.
 
-## How it works (4 steps)
+## Features
 
-    captions (.txt) ─┐
-                     ├─> CLIP embeddings ─> saved in outputs/ ─┐
-    images (.jpg)  ──┘                                         ├─> cosine similarity ─> Top-K images
-    your text query ───────> CLIP text embedding ──────────────┘
+- Search images using natural-language queries.
+- Generate 512-dimensional image and text embeddings using pretrained CLIP.
+- Support image, caption, and hybrid search modes.
+- Rank results using cosine similarity.
+- Display Top-K results with filenames, captions (when available), and similarity scores.
+- Reuse previously generated image embeddings.
+- Evaluate caption-to-image retrieval using Recall@K and Mean Reciprocal Rank (MRR).
+- Use the system through a Streamlit interface or command line.
 
-1. CLIP turns every image (and every caption) into a list of 512 numbers (an *embedding*).
-2. Your query is turned into 512 numbers the same way.
-3. We compare the query with every image using cosine similarity (higher = more similar).
-4. The best K images are shown.
+## Tech Stack
 
-## Project structure
+- Python
+- PyTorch
+- Hugging Face Transformers
+- CLIP (`openai/clip-vit-base-patch32`)
+- NumPy
+- Streamlit
+- Pillow
+- Matplotlib
 
-    ├── build_index.py        STEP 1  create embeddings from images + captions
-    ├── search_cli.py         STEP 2  quick search in the terminal
-    ├── app.py                STEP 3  demo web app (Streamlit)
-    ├── evaluate.py           STEP 4  testing + accuracy numbers + result pictures
-    ├── src/
-    │   ├── config.py         paths and settings
-    │   ├── clip_encoder.py   loads CLIP, makes embeddings
-    │   └── search_engine.py  similarity search
-    ├── tests/test_queries.txt  queries used by evaluate.py
-    ├── data/                 YOUR images + captions (NOT on GitHub)
-    ├── outputs/              embeddings, metrics, result pictures (made by the scripts)
-    └── docs/                 installation, workflow, usage, GitHub guide
+## How It Works
 
-## Quick start
+1. Images and their corresponding caption files are loaded.
+2. CLIP converts images and captions into 512-dimensional embeddings.
+3. The embeddings and their filename mappings are saved.
+4. A text query is converted into an embedding.
+5. Cosine similarity is used to compare the query with stored embeddings.
+6. The most similar images are returned in ranked order.
 
-    pip install -r requirements.txt
-    # put images in data/images/ and captions in data/captions/   (see data/README.md)
-    python build_index.py          # a few minutes on CPU
-    streamlit run app.py           # opens the demo in your browser
+### Search Modes
 
-Already have image embeddings (for example from Week 4)? Reuse them, only the captions are encoded:
+| Mode | Description |
+|---|---|
+| `image` | Compares the text query with image embeddings. |
+| `caption` | Compares the query with available caption embeddings. |
+| `hybrid` | Combines image and caption similarity scores. If an image has no usable caption, its image score is used. |
 
-    python build_index.py --image-embeddings path/to/folder_with_image_embeddings.npy
+## Project Structure
 
-Data in another folder (e.g. Google Drive)? Set `VISMA_IMAGE_DIR`, `VISMA_CAPTION_DIR`, `VISMA_OUTPUT_DIR` (see docs/COLAB.md).
+```text
+AI-powered-Image-Search-Engine/
+│
+├── app.py
+├── build_index.py
+├── evaluate.py
+├── search_cli.py
+├── requirements.txt
+├── README.md
+│
+├── src/
+│   ├── config.py
+│   ├── clip_encoder.py
+│   └── search_engine.py
+│
+├── data/
+│   └── README.md
+│
+├── outputs/
+├── tests/
+│   └── test_queries.txt
+│
+├── docs/
+└── report/
+```
 
-More detail: [docs/INSTALLATION.md](docs/INSTALLATION.md) · [docs/USAGE.md](docs/USAGE.md) · [docs/WORKFLOW.md](docs/WORKFLOW.md) · [docs/GITHUB_GUIDE.md](docs/GITHUB_GUIDE.md)
+## Dataset
 
-## Search modes
+The project was evaluated on a dataset containing:
 
-| Mode | Compares the query with | Use when |
-|---|---|---|
-| image (default) | image embeddings | normal visual search |
-| caption | caption embeddings | you want to match the written description |
-| hybrid | average of both | best of both; images with no caption fall back to image score |
+| Item | Count |
+|---|---:|
+| Images | 1,000 |
+| Caption files | 941 |
+| Non-empty captions | 940 |
+| Images without a caption file | 59 |
+| Empty caption files | 1 |
+
+The dataset itself is not included in this repository. The images, captions, generated embeddings, and other dataset-derived files are excluded.
+
+Expected dataset structure:
+
+```text
+data/
+├── images/
+│   ├── 3001.jpg
+│   ├── 3002.jpg
+│   └── ...
+└── captions/
+    ├── 3001.txt
+    ├── 3002.txt
+    └── ...
+```
+
+Caption filenames should match the corresponding image filename, with a `.txt` extension.
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/charu2210/AI-powered-Image-Search-Engine.git
+cd AI-powered-Image-Search-Engine
+```
+
+### 2. Create a virtual environment
+
+**Windows:**
+
+```cmd
+python -m venv venv
+venv\Scripts\activate
+```
+
+**macOS / Linux:**
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## Configure Dataset Paths
+
+The dataset paths can be configured using environment variables.
+
+**Windows CMD:**
+
+```cmd
+set VISMA_IMAGE_DIR=C:\path\to\images
+set VISMA_CAPTION_DIR=C:\path\to\captions
+set VISMA_OUTPUT_DIR=C:\path\to\outputs
+```
+
+**PowerShell:**
+
+```powershell
+$env:VISMA_IMAGE_DIR = "C:\path\to\images"
+$env:VISMA_CAPTION_DIR = "C:\path\to\captions"
+$env:VISMA_OUTPUT_DIR = "C:\path\to\outputs"
+```
+
+**macOS / Linux:**
+
+```bash
+export VISMA_IMAGE_DIR="/path/to/images"
+export VISMA_CAPTION_DIR="/path/to/captions"
+export VISMA_OUTPUT_DIR="/path/to/outputs"
+```
+
+These variables apply to the current terminal session.
+
+## Build the Search Index
+
+To generate image and caption embeddings:
+
+```bash
+python build_index.py
+```
+
+To reuse existing image embeddings, provide the folder containing `image_embeddings.npy` and `image_filenames.npy`:
+
+```bash
+python build_index.py --image-embeddings "/path/to/existing/image/embeddings"
+```
+
+To force image re-encoding:
+
+```bash
+python build_index.py --force
+```
+
+The generated index contains:
+
+```text
+outputs/
+├── image_embeddings.npy
+├── caption_embeddings.npy
+├── image_filenames.npy
+├── captions.json
+└── dataset_stats.json
+```
+
+## Run the Application
+
+After building the index:
+
+```bash
+streamlit run app.py
+```
+
+Open the local URL displayed in the terminal, usually:
+
+```text
+http://localhost:8501
+```
+
+Enter a text description, select a search mode, choose the number of results, and view the retrieved images.
+
+## Command-Line Search
+
+```bash
+python search_cli.py "a red double-decker bus"
+```
+
+Replace the example query with any image description.
+
+## Evaluation
+
+Run:
+
+```bash
+python evaluate.py
+```
+
+The evaluation script:
+
+- Performs caption-to-image retrieval using the available dataset captions.
+- Calculates Recall@1, Recall@5, Recall@10, MRR, and median rank.
+- Runs sample natural-language queries.
+- Saves Top-5 result visualizations and a text summary.
 
 ## Results
 
-Run `python evaluate.py`. It prints Recall@1/5/10 and saves a picture of the top-5 results for every test query in `outputs/results/`.
+The completed evaluation run produced:
+
+| Metric | Result |
+|---|---:|
+| Images indexed | 1,000 |
+| Caption queries evaluated | 940 |
+| Recall@1 | 24.47% |
+| Recall@5 | 49.89% |
+| Recall@10 | 62.13% |
+| Mean Reciprocal Rank | 0.3700 |
+| Median Rank | 6 |
+
+These metrics represent caption-to-image retrieval performance on this dataset. They are not general CLIP accuracy figures or results from an independent test set.
 
 ## Limitations
 
-- CLIP ViT-B/32 is small and sometimes confuses fine details (counting, colours, small objects).
-- Similarity scores are low (about 0.2–0.3) even for good matches. That is normal for CLIP. Look at the ranking, not the number.
-- Images without a caption can only be found in image mode.
+- Retrieval quality depends on the pretrained CLIP model and the query wording.
+- Fine-grained details, exact object counts, and text within images may not be retrieved reliably.
+- Caption search depends on the availability of non-empty captions.
+- The current implementation compares stored embeddings directly, which may become slow for very large datasets.
+- Hybrid search uses a simple average of image and caption similarity scores.
 
-## Confidentiality
+## Future Improvements
 
-The images and captions belong to the institute's confidential dataset. They are **not** included, and `.gitignore` also blocks every file made from them (embeddings, `captions.json`, result pictures). Never upload them to a public repository. Folder layout: `data/README.md`.
+- Integrate FAISS for faster similarity search on larger datasets.
+- Improve hybrid ranking through score calibration or weighting.
+- Add filters and more search controls.
+- Evaluate performance on a larger and more diverse dataset.
 
-## Final report and slides
+## Notes
 
-After `build_index.py`, `evaluate.py` and a screenshot of the app:
+- CLIP is used as a pretrained model; it is not fine-tuned in this project.
+- The model generates 512-dimensional image and text embeddings.
+- Similarity scores indicate relative similarity and should not be interpreted as probabilities.
+- The first run requires an internet connection to download the pretrained model.
 
-    pip install python-docx python-pptx
-    python report/build_deliverables.py --github https://github.com/<you>/<repo> --screenshot app.png
+## Author
 
-This writes `report/Project_Report.docx` and `report/Project_Presentation.pptx` from your real results.
+**Charu Malik**
+
+[GitHub Repository](https://github.com/charu2210/AI-powered-Image-Search-Engine)
