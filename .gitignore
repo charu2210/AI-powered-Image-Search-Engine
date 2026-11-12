@@ -1,0 +1,28 @@
+# Dataset must NOT be uploaded to GitHub (assignment rule)
+data/images/*
+data/captions/*
+!data/images/.gitkeep
+!data/captions/.gitkeep
+
+# Everything derived from the dataset stays private (embeddings, captions.json, result pictures)
+outputs/*
+!outputs/.gitkeep
+outputs/results/*
+!outputs/results/.gitkeep
+*.npy
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Confidential generated deliverables and screenshots
+report/*.docx
+report/*.pptx
+report/*.pdf
+report/discussion.txt
+app.png
+*.png
