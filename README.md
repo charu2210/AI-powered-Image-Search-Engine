@@ -76,10 +76,7 @@ The project was evaluated on a dataset containing:
 | Item | Count |
 |---|---:|
 | Images | 1,000 |
-| Caption files | 941 |
-| Non-empty captions | 940 |
-| Images without a caption file | 59 |
-| Empty caption files | 1 |
+| Caption files | 1,000 |
 
 The dataset itself is not included in this repository. The images, captions, generated embeddings, and other dataset-derived files are excluded.
 
